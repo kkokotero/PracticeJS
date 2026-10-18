@@ -6,6 +6,7 @@
     "@types/node": "latest"
   },
   "dependencies": {
-    "@clack/prompts": "^1.8.1"
+    "@clack/prompts": "^1.8.1",
+    "neo-blessed": "^0.2.0"
   }
 }
