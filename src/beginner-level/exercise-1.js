@@ -25,26 +25,26 @@ import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 console.clear();
 intro("Clasificador de temperatura");
 
-const temperatureStr = await text({
-  message: "¿Cuál es la temperatura actual en grados Celsius (°C)?:",
-  placeholder: "21 °C",
+const temperatureInput = await text({
+  message: "¿Cuál es la temperatura actual en grados Celsius (°C)?",
+  placeholder: "Ej. 21",
   validate: (value) => {
-    if (!value.trim() || Number.isNaN(Number(value))) {
-      return "Por favor, ingresa un valor numérico válido (ej. 22 o -4).";
+    if (!value?.trim() || Number.isNaN(Number(value))) {
+      return "Ingresa un valor numérico válido (por ejemplo, 22 o -4).";
     }
   },
 });
 
-if (isCancel(temperatureStr)) {
+if (isCancel(temperatureInput)) {
   cancel("Consulta de temperatura cancelada.");
   process.exit(0);
 }
 
-const temperature = Number(temperatureStr);
+const temperatureCelsius = Number(temperatureInput);
 
-if (temperature < 10) {
+if (temperatureCelsius < 10) {
   outro("Hace frío, lleva chaqueta");
-} else if (temperature < 25) {
+} else if (temperatureCelsius < 25) {
   outro("Clima templado");
 } else {
   outro("Hace calor, hidrátate");

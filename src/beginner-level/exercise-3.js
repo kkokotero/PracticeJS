@@ -26,30 +26,31 @@
 import { cancel, intro, isCancel, log, outro, text } from "@clack/prompts";
 
 console.clear();
-intro("Cuenta regresiva de lanzamiento");
+intro("Cuenta regresiva para el lanzamiento");
 
-const userNumberStr = await text({
-  message: "Ingresa un número:",
+const secondsInput = await text({
+  message: "¿Desde qué número comienza la cuenta regresiva?",
   placeholder: "Ej. 5",
   validate: (value) => {
-    const num = Number(value);
+    const seconds = Number(value);
 
-    if (!value.trim() || Number.isNaN(num) || !Number.isInteger(num))
-      return "Necesitamos un número entero válido.";
+    if (!value?.trim() || Number.isNaN(seconds) || !Number.isInteger(seconds)) {
+      return "Ingresa un número entero válido (por ejemplo, 5).";
+    }
 
-    if (num <= 0) return "El número debe ser mayor a 0.";
+    if (seconds <= 0) return "El número debe ser mayor que 0.";
   },
 });
 
-if (isCancel(userNumberStr)) {
-  cancel("Operación cancelada por el usuario.");
+if (isCancel(secondsInput)) {
+  cancel("Cuenta regresiva cancelada.");
   process.exit(0);
 }
 
-const userNumber = Number(userNumberStr);
+const totalSeconds = Number(secondsInput);
 
-for (let i = userNumber; i > 0; i--) {
-  log.step(`${i} segundos restantes...`);
+for (let secondsLeft = totalSeconds; secondsLeft > 0; secondsLeft--) {
+  log.step(`${secondsLeft} segundos restantes...`);
   await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 

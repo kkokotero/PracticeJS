@@ -29,41 +29,48 @@
 
 import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 
+/**
+ * Devuelve la etiqueta que corresponde a un número según las
+ * reglas de RiwiCoder (FizzBuzz).
+ *
+ * @param {number} number Número a evaluar.
+ * @returns {string} "RiwiCoder", "Riwi", "Coder" o el número.
+ */
+function getRiwiCoderLabel(number) {
+  if (number % 15 === 0) return "RiwiCoder"; // múltiplo de 3 y 5
+  if (number % 3 === 0) return "Riwi"; // múltiplo de 3
+  if (number % 5 === 0) return "Coder"; // múltiplo de 5
+
+  return String(number);
+}
+
 console.clear();
-intro("Riwi Coder");
+intro("Secuencia RiwiCoder");
 
-const userNumberStr = await text({
-  message: "Ingresa un número entero positivo:",
-  placeholder: "Ej. 5",
+const limitInput = await text({
+  message: "¿Hasta qué número quieres generar la secuencia?",
+  placeholder: "Ej. 15",
   validate: (value) => {
-    const num = Number(value);
+    const limit = Number(value);
 
-    if (!value.trim() || Number.isNaN(num) || !Number.isInteger(num))
-      return "Necesitamos un número entero válido.";
+    if (!value?.trim() || Number.isNaN(limit) || !Number.isInteger(limit)) {
+      return "Ingresa un número entero válido (por ejemplo, 15).";
+    }
 
-    if (num <= 0) return "El número debe ser mayor a 0.";
+    if (limit <= 0) return "El número debe ser mayor que 0.";
   },
 });
 
-if (isCancel(userNumberStr)) {
-  cancel("Operación cancelada por el usuario.");
+if (isCancel(limitInput)) {
+  cancel("Generación de la secuencia cancelada.");
   process.exit(0);
 }
 
-const userNumber = Number(userNumberStr);
-const sequence = [];
+const limit = Number(limitInput);
+const results = [];
 
-for (let i = 1; i <= userNumber; i++) {
-  // Los múltiplos de 3 y 5 (i % 15 === 0) se evalúan primero.
-  if (i % 15 === 0) {
-    sequence.push("RiwiCoder");
-  } else if (i % 3 === 0) {
-    sequence.push("Riwi");
-  } else if (i % 5 === 0) {
-    sequence.push("Coder");
-  } else {
-    sequence.push(String(i));
-  }
+for (let currentNumber = 1; currentNumber <= limit; currentNumber++) {
+  results.push(getRiwiCoderLabel(currentNumber));
 }
 
-outro(sequence.join("\n"));
+outro(results.join("\n"));

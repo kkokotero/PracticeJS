@@ -29,68 +29,69 @@
 
 import { cancel, intro, isCancel, log, outro, text } from "@clack/prompts";
 
-const randomNumber = Math.floor(Math.random() * 20) + 1;
-const maxAttempts = 5;
+const MAX_ATTEMPTS = 5;
+const secretNumber = Math.floor(Math.random() * 20) + 1;
 
-let userWins = false;
+let hasUserWon = false;
 
-// Variables para rastrear el rango dinámico
-let minRange = 1;
-let maxRange = 20;
+// Rango de valores posibles para el número secreto.
+// Se estrecha después de cada intento fallido.
+let minPossible = 1;
+let maxPossible = 20;
 
 console.clear();
-intro("Adivina el Número");
+intro("Adivina el número secreto");
 
-for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   console.clear();
 
-  // Mostramos el rango dinámico actualizado después de limpiar la consola
-  log.info(`El número secreto está entre ${minRange} y ${maxRange}`, {
+  log.info(`El número secreto está entre ${minPossible} y ${maxPossible}`, {
     spacing: 0,
   });
+  log.step(`Intento número ${attempt} de ${MAX_ATTEMPTS}`);
 
-  log.step(`Intento número ${attempt}/${maxAttempts}`);
-
-  const userNumberStr = await text({
-    message: `Ingresa un número entre ${minRange} y ${maxRange}:`,
+  const guessInput = await text({
+    message: "¿Cuál crees que es el número secreto?",
     placeholder: "Ej. 10",
     validate: (value) => {
-      const num = Number(value);
+      const guess = Number(value);
 
-      if (!value?.trim() || Number.isNaN(num) || !Number.isInteger(num))
-        return "Necesitamos un número entero válido.";
+      if (!value?.trim() || Number.isNaN(guess) || !Number.isInteger(guess)) {
+        return "Ingresa un número entero válido (por ejemplo, 10).";
+      }
 
-      if (num < minRange || num > maxRange)
-        return `El número debe estar entre ${minRange} y ${maxRange}.`;
+      if (guess < minPossible || guess > maxPossible) {
+        return `El número debe estar entre ${minPossible} y ${maxPossible}.`;
+      }
     },
   });
 
-  if (isCancel(userNumberStr)) {
-    cancel("Operación cancelada por el usuario.");
+  if (isCancel(guessInput)) {
+    cancel("Juego cancelado.");
     process.exit(0);
   }
 
-  const userNumber = Number(userNumberStr);
+  const userGuess = Number(guessInput);
 
-  if (userNumber === randomNumber) {
-    userWins = true;
+  if (userGuess === secretNumber) {
+    hasUserWon = true;
     outro(`¡Ganaste en ${attempt} ${attempt === 1 ? "intento" : "intentos"}!`);
     break;
   }
 
-  if (userNumber < randomNumber) {
-    log.message("El número oculto es mayor");
-    // Actualizamos el límite inferior del rango si el usuario se quedó corto
-    minRange = userNumber + 1;
+  if (userGuess < secretNumber) {
+    log.message("El número secreto es mayor. Intenta de nuevo.");
+    // Limitamos por abajo: el secreto no puede ser menor a lo ya intentado.
+    minPossible = userGuess + 1;
   } else {
-    log.message("El número oculto es menor");
-    // Actualizamos el límite superior del rango si el usuario se pasó
-    maxRange = userNumber - 1;
+    log.message("El número secreto es menor. Intenta de nuevo.");
+    // Limitamos por arriba: el secreto no puede ser mayor a lo ya intentado.
+    maxPossible = userGuess - 1;
   }
 
   await new Promise((resolve) => setTimeout(resolve, 1200));
 }
 
-if (!userWins) {
-  outro(`Perdiste, el número era ${randomNumber}`);
+if (!hasUserWon) {
+  outro(`Perdiste, el número era ${secretNumber}`);
 }

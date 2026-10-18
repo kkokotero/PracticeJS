@@ -38,62 +38,63 @@ import {
 } from "@clack/prompts";
 
 console.clear();
-intro("Cobro de parqueadero");
+intro("Cálculo del cobro del parqueadero");
 
-const hoursStr = await text({
-  message: "¿Cuántas horas estuvo estacionado el vehículo en las instalaciones?:",
-  placeholder: "Ej. 3 o 1",
+const parkedHoursInput = await text({
+  message: "¿Cuántas horas estuvo estacionado el vehículo?",
+  placeholder: "Ej. 3",
   validate: (value) => {
-    const num = Number(value);
+    const hours = Number(value);
 
     // Comprueba si está vacío, si no es un número o si no es un entero
-    if (!value.trim() || Number.isNaN(num) || !Number.isInteger(num))
-      return "Necesitamos un número entero válido de horas.";
+    if (!value?.trim() || Number.isNaN(hours) || !Number.isInteger(hours)) {
+      return "Ingresa un número entero de horas (por ejemplo, 3).";
+    }
 
-    if (num < 0) return "El tiempo de estancia no puede ser negativo.";
+    if (hours < 0) return "El tiempo de estacionamiento no puede ser negativo.";
   },
 });
 
-if (isCancel(hoursStr)) {
-  cancel("Operación cancelada por el usuario.");
+if (isCancel(parkedHoursInput)) {
+  cancel("Cobro de parqueadero cancelado.");
   process.exit(0);
 }
 
-const isCoder = await confirm({
-  message: "¿Haces parte de la comunidad de coders de Riwi?:",
+const isRiwiCoder = await confirm({
+  message: "¿Eres coder de la comunidad de Riwi?",
   initialValue: true, // Opción por defecto (Sí)
 });
 
-if (isCancel(isCoder)) {
-  cancel("Operación cancelada por el usuario.");
+if (isCancel(isRiwiCoder)) {
+  cancel("Cobro de parqueadero cancelado.");
   process.exit(0);
 }
 
-const hours = Number(hoursStr);
+const parkedHours = Number(parkedHoursInput);
 
-const BASE_FEE = 3_000;
-const ADDITIONAL_HOURLY_RATE = 2_000;
-const MAX_FEE = 20_000;
-const CODER_DISCOUNT_FACTOR = 0.85; // 1 - 0.15
+const FIRST_HOUR_FEE = 3_000;
+const ADDITIONAL_HOUR_FEE = 2_000;
+const MAX_PARKING_FEE = 20_000;
+const RIWI_CODER_DISCOUNT_FACTOR = 0.85; // 1 - 0.15
 
-log.step("Calculando tarifa óptima y beneficios...");
+log.step("Calculando el costo total del parqueadero...");
 
-if (hours <= 0) {
+if (parkedHours <= 0) {
   outro("El tiempo registrado es de 0 horas. No se genera ningún cobro.");
 } else {
   // Primera hora a tarifa base y cada hora adicional a la tarifa adicional.
-  const grossPayment = BASE_FEE + (hours - 1) * ADDITIONAL_HOURLY_RATE;
+  const subtotal = FIRST_HOUR_FEE + (parkedHours - 1) * ADDITIONAL_HOUR_FEE;
 
-  // Si el cálculo supera el tope, se cobra el tope.
-  const cappedPayment = Math.min(grossPayment, MAX_FEE);
+  // Si el subtotal supera el tope, se cobra el tope.
+  const cappedSubtotal = Math.min(subtotal, MAX_PARKING_FEE);
 
-  const totalPayment = isCoder
-    ? cappedPayment * CODER_DISCOUNT_FACTOR
-    : cappedPayment;
+  const totalToPay = isRiwiCoder
+    ? cappedSubtotal * RIWI_CODER_DISCOUNT_FACTOR
+    : cappedSubtotal;
 
-  if (isCoder) {
-    log.info("Descuento de coder aplicado exitosamente");
+  if (isRiwiCoder) {
+    log.info("Descuento de coder de Riwi aplicado (15 %)");
   }
 
-  outro(`Tienes que pagar $${totalPayment}`);
+  outro(`Total a pagar: $${totalToPay}`);
 }

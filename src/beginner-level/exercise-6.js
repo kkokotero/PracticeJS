@@ -30,46 +30,54 @@
 
 import { cancel, intro, isCancel, log, outro, text } from "@clack/prompts";
 
-console.clear();
-intro("Validar contraseña segura");
+const MIN_PASSWORD_LENGTH = 8;
 
-const userPassword = await text({
-  message: `Ingresa una contraseña:`,
+console.clear();
+intro("Validador de contraseña segura");
+
+const passwordInput = await text({
+  message: "Ingresa la contraseña que quieres validar:",
   placeholder: "Ej. Asd.123*",
 });
 
-if (isCancel(userPassword)) {
-  cancel("Operación cancelada por el usuario.");
+if (isCancel(passwordInput)) {
+  cancel("Validación de contraseña cancelada.");
   process.exit(0);
 }
 
-let numberCount = 0;
-let capitalLetterCount = 0;
+let digitCount = 0;
+let uppercaseCount = 0;
 
-for (const character of userPassword) {
-  if (/^[0-9]$/.test(character)) {
-    numberCount++;
+for (const currentCharacter of passwordInput) {
+  if (/^[0-9]$/.test(currentCharacter)) {
+    digitCount++;
     continue;
   }
 
-  if (/^[A-Z]$/.test(character)) {
-    capitalLetterCount++;
+  if (/^[A-Z]$/.test(currentCharacter)) {
+    uppercaseCount++;
   }
 }
 
-if (userPassword.length >= 8 && numberCount > 0 && capitalLetterCount > 0) {
+const hasMinLength = passwordInput.length >= MIN_PASSWORD_LENGTH;
+const hasDigit = digitCount > 0;
+const hasUppercase = uppercaseCount > 0;
+
+if (hasMinLength && hasDigit && hasUppercase) {
   outro("Contraseña segura");
 } else {
-  if (numberCount <= 0) {
-    log.warning("No tienes ningún número en la contraseña");
+  if (!hasDigit) {
+    log.warning("La contraseña debe incluir al menos un número.");
   }
 
-  if (capitalLetterCount <= 0) {
-    log.warning("No tienes ninguna mayúscula en la contraseña");
+  if (!hasUppercase) {
+    log.warning("La contraseña debe incluir al menos una letra mayúscula.");
   }
 
-  if (userPassword.length < 8) {
-    log.warning("La contraseña debe tener al menos 8 caracteres");
+  if (!hasMinLength) {
+    log.warning(
+      `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres (tiene ${passwordInput.length}).`,
+    );
   }
 
   outro("Contraseña insegura");
