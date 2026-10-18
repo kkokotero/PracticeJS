@@ -1,0 +1,11 @@
+{
+  "name": "practicejs",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "latest"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.8.1"
+  }
+}
