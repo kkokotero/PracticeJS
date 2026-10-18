@@ -28,9 +28,8 @@ intro("Clasificador de temperatura");
 const temperatureStr = await text({
   message: "¿Cuál es la temperatura actual en grados Celsius (°C)?:",
   placeholder: "21 °C",
-  defaultValue: "",
   validate: (value) => {
-    if (!value || Number.isNaN(Number(value))) {
+    if (!value.trim() || Number.isNaN(Number(value))) {
       return "Por favor, ingresa un valor numérico válido (ej. 22 o -4).";
     }
   },
@@ -45,7 +44,7 @@ const temperature = Number(temperatureStr);
 
 if (temperature < 10) {
   outro("Hace frío, lleva chaqueta");
-} else if (temperature >= 10 && temperature <= 24) {
+} else if (temperature < 25) {
   outro("Clima templado");
 } else {
   outro("Hace calor, hidrátate");

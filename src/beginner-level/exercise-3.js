@@ -23,15 +23,7 @@
  *
  */
 
-
-import {
-  cancel,
-  intro,
-  isCancel,
-  log,
-  outro,
-  text,
-} from "@clack/prompts";
+import { cancel, intro, isCancel, log, outro, text } from "@clack/prompts";
 
 console.clear();
 intro("Cuenta regresiva de lanzamiento");
@@ -42,10 +34,10 @@ const userNumberStr = await text({
   validate: (value) => {
     const num = Number(value);
 
-    if (!value || Number.isNaN(num) || !Number.isInteger(num))
+    if (!value.trim() || Number.isNaN(num) || !Number.isInteger(num))
       return "Necesitamos un número entero válido.";
 
-    if (num <= 0) return "El numero debe ser mayor a 0.";
+    if (num <= 0) return "El número debe ser mayor a 0.";
   },
 });
 

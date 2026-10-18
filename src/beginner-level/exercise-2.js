@@ -47,7 +47,7 @@ const hoursStr = await text({
     const num = Number(value);
 
     // Comprueba si está vacío, si no es un número o si no es un entero
-    if (!value || Number.isNaN(num) || !Number.isInteger(num))
+    if (!value.trim() || Number.isNaN(num) || !Number.isInteger(num))
       return "Necesitamos un número entero válido de horas.";
 
     if (num < 0) return "El tiempo de estancia no puede ser negativo.";
@@ -58,7 +58,6 @@ if (isCancel(hoursStr)) {
   cancel("Operación cancelada por el usuario.");
   process.exit(0);
 }
-
 
 const isCoder = await confirm({
   message: "¿Haces parte de la comunidad de coders de Riwi?:",
@@ -72,35 +71,29 @@ if (isCancel(isCoder)) {
 
 const hours = Number(hoursStr);
 
-const baseFee = 3_000;
-const additionalHourlyRate = 2_000;
-const discount = 1 - 0.15;
+const BASE_FEE = 3_000;
+const ADDITIONAL_HOURLY_RATE = 2_000;
+const MAX_FEE = 20_000;
+const CODER_DISCOUNT_FACTOR = 0.85; // 1 - 0.15
 
 log.step("Calculando tarifa óptima y beneficios...");
 
 if (hours <= 0) {
   outro("El tiempo registrado es de 0 horas. No se genera ningún cobro.");
-} else if (hours === 1) {
-  const finalPayment = isCoder ? baseFee * discount : baseFee;
-
-  if (isCoder) {
-    log.info("Descuento de coder aplicado exitosamente");
-  }
-
-  outro(`Tienes que pagar $${finalPayment}`);
 } else {
-  const overtime = hours - 1;
-  const additionalFee = overtime * additionalHourlyRate;
-  const calculatedPayment = baseFee + additionalFee;
+  // Primera hora a tarifa base y cada hora adicional a la tarifa adicional.
+  const grossPayment = BASE_FEE + (hours - 1) * ADDITIONAL_HOURLY_RATE;
+
+  // Si el cálculo supera el tope, se cobra el tope.
+  const cappedPayment = Math.min(grossPayment, MAX_FEE);
+
+  const totalPayment = isCoder
+    ? cappedPayment * CODER_DISCOUNT_FACTOR
+    : cappedPayment;
 
   if (isCoder) {
     log.info("Descuento de coder aplicado exitosamente");
   }
 
-  // Si el cálculo supera el tope de 20.000, se cobra el tope de 20.000,
-  // de lo contrario se cobra el valor calculado.
-  const payment = calculatedPayment >= 20_000 ? 20_000 : calculatedPayment;
-  const finalPayment = isCoder ? payment * discount : payment;
-
-  outro(`Tienes que pagar $${finalPayment}`);
+  outro(`Tienes que pagar $${totalPayment}`);
 }

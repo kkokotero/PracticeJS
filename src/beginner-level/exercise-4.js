@@ -27,13 +27,7 @@
  *
  */
 
-import {
-  cancel,
-  intro,
-  isCancel,
-  outro,
-  text,
-} from "@clack/prompts";
+import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 
 console.clear();
 intro("Riwi Coder");
@@ -44,10 +38,10 @@ const userNumberStr = await text({
   validate: (value) => {
     const num = Number(value);
 
-    if (!value || Number.isNaN(num) || !Number.isInteger(num))
+    if (!value.trim() || Number.isNaN(num) || !Number.isInteger(num))
       return "Necesitamos un número entero válido.";
 
-    if (num <= 0) return "El numero debe ser mayor a 0.";
+    if (num <= 0) return "El número debe ser mayor a 0.";
   },
 });
 
@@ -57,25 +51,19 @@ if (isCancel(userNumberStr)) {
 }
 
 const userNumber = Number(userNumberStr);
-let resultSecuence = "";
+const sequence = [];
 
 for (let i = 1; i <= userNumber; i++) {
-  if (i % 3 === 0 && i % 5 === 0) {
-    resultSecuence += " RiwiCoder ";
-    continue;
+  // Los múltiplos de 3 y 5 (i % 15 === 0) se evalúan primero.
+  if (i % 15 === 0) {
+    sequence.push("RiwiCoder");
+  } else if (i % 3 === 0) {
+    sequence.push("Riwi");
+  } else if (i % 5 === 0) {
+    sequence.push("Coder");
+  } else {
+    sequence.push(String(i));
   }
-
-  if (i % 5 === 0) {
-    resultSecuence += " Coder ";
-    continue;
-  }
-
-  if (i % 3 === 0) {
-    resultSecuence += " Riwi ";
-    continue;
-  }
-
-  resultSecuence += ` ${i} `;
 }
 
-outro(resultSecuence);
+outro(sequence.join("\n"));

@@ -46,7 +46,7 @@ if (isCancel(userPassword)) {
 let numberCount = 0;
 let capitalLetterCount = 0;
 
-for (const character of userPassword.split("")) {
+for (const character of userPassword) {
   if (/^[0-9]$/.test(character)) {
     numberCount++;
     continue;
@@ -61,15 +61,15 @@ if (userPassword.length >= 8 && numberCount > 0 && capitalLetterCount > 0) {
   outro("Contraseña segura");
 } else {
   if (numberCount <= 0) {
-    log.warning("No tienes ningun numero en la contraseña");
+    log.warning("No tienes ningún número en la contraseña");
   }
 
   if (capitalLetterCount <= 0) {
-    log.warning("No tienes ninguna mayuscula en la contraseña");
+    log.warning("No tienes ninguna mayúscula en la contraseña");
   }
 
   if (userPassword.length < 8) {
-    log.warning("La contraseña debe tener mas de 8 caracteres");
+    log.warning("La contraseña debe tener al menos 8 caracteres");
   }
 
   outro("Contraseña insegura");

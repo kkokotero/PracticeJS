@@ -30,7 +30,7 @@
 import { cancel, intro, isCancel, log, outro, text } from "@clack/prompts";
 
 const randomNumber = Math.floor(Math.random() * 20) + 1;
-const maxAttemps = 5;
+const maxAttempts = 5;
 
 let userWins = false;
 
@@ -41,7 +41,7 @@ let maxRange = 20;
 console.clear();
 intro("Adivina el Número");
 
-for (let attemp = 1; attemp <= maxAttemps; attemp++) {
+for (let attempt = 1; attempt <= maxAttempts; attempt++) {
   console.clear();
 
   // Mostramos el rango dinámico actualizado después de limpiar la consola
@@ -49,7 +49,7 @@ for (let attemp = 1; attemp <= maxAttemps; attemp++) {
     spacing: 0,
   });
 
-  log.step(`Intento número ${attemp}/${maxAttemps}`);
+  log.step(`Intento número ${attempt}/${maxAttempts}`);
 
   const userNumberStr = await text({
     message: `Ingresa un número entre ${minRange} y ${maxRange}:`,
@@ -57,8 +57,11 @@ for (let attemp = 1; attemp <= maxAttemps; attemp++) {
     validate: (value) => {
       const num = Number(value);
 
-      if (!value || Number.isNaN(num) || !Number.isInteger(num))
+      if (!value?.trim() || Number.isNaN(num) || !Number.isInteger(num))
         return "Necesitamos un número entero válido.";
+
+      if (num < minRange || num > maxRange)
+        return `El número debe estar entre ${minRange} y ${maxRange}.`;
     },
   });
 
@@ -71,22 +74,18 @@ for (let attemp = 1; attemp <= maxAttemps; attemp++) {
 
   if (userNumber === randomNumber) {
     userWins = true;
-    outro(`¡Ganaste en ${attemp} ${attemp === 1 ? "intento" : "intentos"}!`);
+    outro(`¡Ganaste en ${attempt} ${attempt === 1 ? "intento" : "intentos"}!`);
     break;
   }
 
   if (userNumber < randomNumber) {
     log.message("El número oculto es mayor");
     // Actualizamos el límite inferior del rango si el usuario se quedó corto
-    if (userNumber >= minRange) {
-      minRange = userNumber + 1;
-    }
+    minRange = userNumber + 1;
   } else {
     log.message("El número oculto es menor");
     // Actualizamos el límite superior del rango si el usuario se pasó
-    if (userNumber <= maxRange) {
-      maxRange = userNumber - 1;
-    }
+    maxRange = userNumber - 1;
   }
 
   await new Promise((resolve) => setTimeout(resolve, 1200));
