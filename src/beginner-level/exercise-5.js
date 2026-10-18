@@ -29,19 +29,21 @@
 
 import { cancel, intro, isCancel, log, outro, text } from "@clack/prompts";
 
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 5; // intentos disponibles
+
+// número secreto al azar entre 1 y 20
 const secretNumber = Math.floor(Math.random() * 20) + 1;
 
-let hasUserWon = false;
+let hasUserWon = false; // nos dice si la persona ya acertó
 
-// Rango de valores posibles para el número secreto.
-// Se estrecha después de cada intento fallido.
+// rango en el que puede estar el secreto (se achica con cada pista)
 let minPossible = 1;
 let maxPossible = 20;
 
-console.clear();
-intro("Adivina el número secreto");
+console.clear(); // Limpiamos la consola para que la interacción se vea ordenada
+intro("Adivina el número secreto"); // intro() para mostrar el título del programa
 
+// damos como máximo MAX_ATTEMPTS intentos
 for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   console.clear();
 
@@ -50,12 +52,16 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   });
   log.step(`Intento número ${attempt} de ${MAX_ATTEMPTS}`);
 
+  // pedimos el intento del usuario; siempre llega como texto (string)
   const guessInput = await text({
     message: "¿Cuál crees que es el número secreto?",
     placeholder: "Ej. 10",
+    // validate() se ejecuta mientras el usuario escribe: si devuelve un texto,
+    // se muestra como error y no lo deja continuar con ese valor
     validate: (value) => {
       const guess = Number(value);
 
+      // value?.trim() quita los espacios; si queda vacío o no es un número, es inválido
       if (!value?.trim() || Number.isNaN(guess) || !Number.isInteger(guess)) {
         return "Ingresa un número entero válido (por ejemplo, 10).";
       }
@@ -66,9 +72,10 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     },
   });
 
+  // Validamos si el usuario no canceló la entrada
   if (isCancel(guessInput)) {
     cancel("Juego cancelado.");
-    process.exit(0);
+    process.exit(0); // Terminamos el programa.
   }
 
   const userGuess = Number(guessInput);
@@ -76,16 +83,15 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   if (userGuess === secretNumber) {
     hasUserWon = true;
     outro(`¡Ganaste en ${attempt} ${attempt === 1 ? "intento" : "intentos"}!`);
-    break;
+    break; // ya acertó: salimos del ciclo
   }
 
+  // damos la pista y achicamos el rango posible
   if (userGuess < secretNumber) {
     log.message("El número secreto es mayor. Intenta de nuevo.");
-    // Limitamos por abajo: el secreto no puede ser menor a lo ya intentado.
     minPossible = userGuess + 1;
   } else {
     log.message("El número secreto es menor. Intenta de nuevo.");
-    // Limitamos por arriba: el secreto no puede ser mayor a lo ya intentado.
     maxPossible = userGuess - 1;
   }
 

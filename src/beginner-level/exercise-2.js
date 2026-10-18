@@ -37,16 +37,19 @@ import {
   text,
 } from "@clack/prompts";
 
-console.clear();
-intro("Cálculo del cobro del parqueadero");
+console.clear(); // Limpiamos la consola para que la interacción se vea ordenada
+intro("Cálculo del cobro del parqueadero"); // intro() para mostrar el título del programa
 
+// pedimos las horas al usuario; siempre llega como texto (string)
 const parkedHoursInput = await text({
   message: "¿Cuántas horas estuvo estacionado el vehículo?",
   placeholder: "Ej. 3",
+  // validate() se ejecuta mientras el usuario escribe: si devuelve un texto,
+  // se muestra como error y no lo deja continuar con ese valor
   validate: (value) => {
     const hours = Number(value);
 
-    // Comprueba si está vacío, si no es un número o si no es un entero
+    // value?.trim() quita los espacios; si queda vacío o no es un número, es inválido
     if (!value?.trim() || Number.isNaN(hours) || !Number.isInteger(hours)) {
       return "Ingresa un número entero de horas (por ejemplo, 3).";
     }
@@ -55,39 +58,49 @@ const parkedHoursInput = await text({
   },
 });
 
+// Validamos si el usuario no canceló la entrada
 if (isCancel(parkedHoursInput)) {
   cancel("Cobro de parqueadero cancelado.");
-  process.exit(0);
+  process.exit(0); // Terminamos el programa.
 }
 
+// preguntamos si es coder de la comunidad de Riwi
 const isRiwiCoder = await confirm({
   message: "¿Eres coder de la comunidad de Riwi?",
-  initialValue: true, // Opción por defecto (Sí)
+  initialValue: true, // La opción "Sí" queda marcada por defecto.
 });
 
+// Validamos si el usuario no canceló la entrada
 if (isCancel(isRiwiCoder)) {
   cancel("Cobro de parqueadero cancelado.");
-  process.exit(0);
+  process.exit(0); // Terminamos el programa.
 }
 
 const parkedHours = Number(parkedHoursInput);
 
+// precios y porcentaje de descuento para coders
 const FIRST_HOUR_FEE = 3_000;
 const ADDITIONAL_HOUR_FEE = 2_000;
 const MAX_PARKING_FEE = 20_000;
-const RIWI_CODER_DISCOUNT_FACTOR = 0.85; // 1 - 0.15
+const RIWI_CODER_DISCOUNT_FACTOR = 0.85; // 0,85 es lo mismo que quitar el 15 %
+
+// da formato de pesos colombianos al número (ej. $ 2.550)
+const currencyFormatter = new Intl.NumberFormat("es-CO", {
+  style: "currency",
+  currency: "COP",
+  maximumFractionDigits: 0,
+});
 
 log.step("Calculando el costo total del parqueadero...");
 
 if (parkedHours <= 0) {
   outro("El tiempo registrado es de 0 horas. No se genera ningún cobro.");
 } else {
-  // Primera hora a tarifa base y cada hora adicional a la tarifa adicional.
+  // primera hora a $3.000 y cada hora extra a $2.000, sin pasar de $20.000
   const subtotal = FIRST_HOUR_FEE + (parkedHours - 1) * ADDITIONAL_HOUR_FEE;
-
-  // Si el subtotal supera el tope, se cobra el tope.
   const cappedSubtotal = Math.min(subtotal, MAX_PARKING_FEE);
 
+  // si es coder, aplicamos el descuento del 15 %
   const totalToPay = isRiwiCoder
     ? cappedSubtotal * RIWI_CODER_DISCOUNT_FACTOR
     : cappedSubtotal;
@@ -96,5 +109,5 @@ if (parkedHours <= 0) {
     log.info("Descuento de coder de Riwi aplicado (15 %)");
   }
 
-  outro(`Total a pagar: $${totalToPay}`);
+  outro(`Total a pagar: ${currencyFormatter.format(totalToPay)}`);
 }

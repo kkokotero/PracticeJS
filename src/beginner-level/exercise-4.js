@@ -29,30 +29,19 @@
 
 import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 
-/**
- * Devuelve la etiqueta que corresponde a un número según las
- * reglas de RiwiCoder (FizzBuzz).
- *
- * @param {number} number Número a evaluar.
- * @returns {string} "RiwiCoder", "Riwi", "Coder" o el número.
- */
-function getRiwiCoderLabel(number) {
-  if (number % 15 === 0) return "RiwiCoder"; // múltiplo de 3 y 5
-  if (number % 3 === 0) return "Riwi"; // múltiplo de 3
-  if (number % 5 === 0) return "Coder"; // múltiplo de 5
+console.clear(); // Limpiamos la consola para que la interacción se vea ordenada
+intro("Secuencia RiwiCoder"); // intro() para mostrar el título del programa
 
-  return String(number);
-}
-
-console.clear();
-intro("Secuencia RiwiCoder");
-
+// pedimos un dato al usuario y lo devuelve como texto (string)
 const limitInput = await text({
   message: "¿Hasta qué número quieres generar la secuencia?",
   placeholder: "Ej. 15",
+  // validate() se ejecuta mientras el usuario escribe: si devuelve un texto,
+  // se muestra como error y no lo deja continuar con ese valor
   validate: (value) => {
     const limit = Number(value);
 
+    // value?.trim() quita los espacios; si queda vacío o no es un número, es inválido
     if (!value?.trim() || Number.isNaN(limit) || !Number.isInteger(limit)) {
       return "Ingresa un número entero válido (por ejemplo, 15).";
     }
@@ -61,16 +50,28 @@ const limitInput = await text({
   },
 });
 
+// Validamos si el usuario no canceló la entrada
 if (isCancel(limitInput)) {
   cancel("Generación de la secuencia cancelada.");
-  process.exit(0);
+  process.exit(0); // Terminamos el programa.
 }
 
 const limit = Number(limitInput);
-const results = [];
+const results = []; // lista con cada resultado
 
+// recorremos del 1 hasta el límite y guardamos cada resultado
 for (let currentNumber = 1; currentNumber <= limit; currentNumber++) {
-  results.push(getRiwiCoderLabel(currentNumber));
+  // el símbolo % da el resto de una división: si es 0, el número es múltiplo
+  if (currentNumber % 3 === 0 && currentNumber % 5 === 0) {
+    results.push("RiwiCoder"); // de 3 y de 5 a la vez
+  } else if (currentNumber % 3 === 0) {
+    results.push("Riwi"); // de 3
+  } else if (currentNumber % 5 === 0) {
+    results.push("Coder"); // de 5
+  } else {
+    results.push(String(currentNumber)); // si no es múltiplo, mostramos el número
+  }
 }
 
+// mostramos un resultado por línea
 outro(results.join("\n"));
